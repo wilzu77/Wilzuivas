@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayar via GoPay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0e14;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            color: #f0f4fa;
+        }
+        .header .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 800;
+            text-decoration: none;
+            color: #f0f4fa;
+        }
+        .header .logo i { color: #00A651; font-size: 36px; }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .header .user-info i { color: #00A651; }
+        .header .user-info a {
+            color: #00A651;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .header .user-info a:hover { text-decoration: underline; }
+        .card {
+            background: #1a1f2b;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid #2a3140;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        @media (max-width: 900px) {
+            .payment-grid { grid-template-columns: 1fr; }
+        }
+        .panel-left {
+            padding: 48px 40px;
+            background: #1a1f2b;
+        }
+        .panel-left .badge {
+            display: inline-block;
+            background: #0f2a1e;
+            color: #00A651;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 16px;
+            border-radius: 100px;
+            margin-bottom: 16px;
+        }
+        .panel-left h1 {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            color: #f0f4fa;
+        }
+        .panel-left .subtitle {
+            color: #9aa4b8;
+            font-size: 15px;
+            margin-bottom: 32px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #d0d8e3;
+        }
+        .form-group .input-wrap {
+            position: relative;
+        }
+        .form-group .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7a93;
+            font-size: 16px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: 2px solid #2a3140;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #0f141c;
+            color: #e8edf5;
+            transition: 0.3s;
+        }
+        .form-group input:focus {
+            border-color: #00A651;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,166,81,0.15);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 500px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00A651, #008a44);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,166,81,0.35);
+        }
+        .btn-secondary {
+            background: #2a3140;
+            color: #f0f4fa;
+            margin-top: 8px;
+        }
+        .btn-secondary:hover { background: #3a4150; }
+        .btn-danger {
+            background: #8b2a2a;
+            color: #fff;
+        }
+        .btn-danger:hover { background: #a33a3a; }
+        .panel-right {
+            padding: 48px 40px;
+            background: #141a24;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-left: 1px solid #2a3140;
+        }
+        @media (max-width: 900px) {
+            .panel-right {
+                border-left: none;
+                border-top: 1px solid #2a3140;
+            }
+        }
+        .panel-right .qr-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #9aa4b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .panel-right .qr-box {
+            background: #0f141c;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: inline-block;
+            margin-bottom: 16px;
+            border: 2px solid #2a3140;
+        }
+        .panel-right .qr-box img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+            display: block;
+        }
+        .panel-right .merchant-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 4px;
+            color: #f0f4fa;
+        }
+        .panel-right .merchant-desc {
+            font-size: 14px;
+            color: #9aa4b8;
+        }
+        .panel-right .gopay-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f2a1e;
+            color: #00A651;
+            padding: 6px 18px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        .transaction-result {
+            margin-top: 24px;
+            padding: 20px;
+            background: #0f2a1e;
+            border-radius: 12px;
+            border: 1px solid #1a4a2e;
+            display: none;
+            text-align: left;
+        }
+        .transaction-result.show {
+            display: block;
+            animation: fadeUp 0.4s ease;
+        }
+        .transaction-result .tr-title {
+            font-weight: 700;
+            color: #00A651;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .transaction-result p {
+            font-size: 14px;
+            margin: 4px 0;
+            color: #d0d8e3;
+        }
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+        }
+        .message.success {
+            background: #0f2a1e;
+            color: #5eea9a;
+            border: 1px solid #1a4a2e;
+        }
+        .message.error {
+            background: #2d1b1b;
+            color: #f87171;
+            border: 1px solid #4b2a2a;
+        }
+        .fee-detail {
+            background: #0f141c;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #00A651;
+        }
+        .fee-detail .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+        }
+        .fee-detail .row.total {
+            font-weight: 700;
+            font-size: 16px;
+            border-top: 1px solid #2a3140;
+            padding-top: 10px;
+            margin-top: 6px;
+        }
+        .fee-detail .row .label {
+            color: #9aa4b8;
+        }
+        .fee-detail .row .value {
+            font-weight: 600;
+            color: #d0d8e3;
+        }
+        .fee-detail .row.total .value {
+            color: #00A651;
+        }
+        .info-note {
+            background: #1f1a0f;
+            border: 1px solid #4a3a1a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #f5d98a;
+            margin-top: 16px;
+        }
+        .info-note i { margin-right: 6px; }
+
+        /* WD SECTION */
+        .wd-section {
+            margin-top: 30px;
+            border-top: 1px solid #2a3140;
+            padding-top: 20px;
+        }
+        .wd-section h3 {
+            color: #f0f4fa;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .wd-section .wd-form {
+            display: grid;
+            gap: 12px;
+        }
+        .wd-section .wd-form input {
+            padding: 12px 16px;
+            border: 2px solid #2a3140;
+            border-radius: 12px;
+            background: #0f141c;
+            color: #e8edf5;
+            font-size: 14px;
+        }
+        .wd-section .wd-form input:focus {
+            border-color: #00A651;
+            outline: none;
+        }
+        .wd-list {
+            margin-top: 16px;
+        }
+        .wd-item {
+            background: #0f141c;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #00A651;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .wd-item .info {
+            color: #d0d8e3;
+            font-size: 14px;
+        }
+        .wd-item .info strong { color: #f0f4fa; }
+        .wd-item .status {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-pending { background: #4a3a1a; color: #f5d98a; }
+        .status-approved { background: #0f2a1e; color: #5eea9a; }
+        .status-rejected { background: #2d1b1b; color: #f87171; }
+        .wd-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .wd-actions button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .wd-actions .approve { background: #00A651; color: #fff; }
+        .wd-actions .approve:hover { background: #008a44; }
+        .wd-actions .reject { background: #8b2a2a; color: #fff; }
+        .wd-actions .reject:hover { background: #a33a3a; }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(10px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+
+        .admin-badge {
+            background: #2a3140;
+            color: #f0f4fa;
+            padding: 2px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-qrcode"></i>
+                <span>GoPay Gateway</span>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="userEmail">-</span>
+                <span id="adminBadge" class="admin-badge" style="display:none;">Admin</span>
+                <a id="logoutBtn">Logout</a>
+            </div>
+        </div>
+
+        <!-- CARD UTAMA (Payment) -->
+        <div class="card">
+            <div class="payment-grid">
+                <div class="panel-left">
+                    <span class="badge"><i class="fas fa-lock"></i> Aman</span>
+                    <h1>Isi data pembayaran</h1>
+                    <p class="subtitle">Masukkan nominal, fee Rp 300 akan ditambahkan otomatis.</p>
+
+                    <div id="messageDiv" class="message"></div>
+
+                    <form id="paymentForm">
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <div class="input-wrap">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="name" placeholder="Nama Anda" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <div class="input-wrap">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" id="email" placeholder="email@anda.com" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Nominal (Rp)</label>
+                                <div class="input-wrap amount">
+                                    <i class="fas fa-rupiah-sign"></i>
+                                    <input type="number" id="amountInput" placeholder="10000" min="1000" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fee-detail">
+                            <div class="row">
+                                <span class="label">Nominal</span>
+                                <span class="value" id="displayNominal">Rp 0</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Biaya QRIS (tetap)</span>
+                                <span class="value">Rp 300</span>
+                            </div>
+                            <div class="row total">
+                                <span class="label">Total yang harus dibayar</span>
+                                <span class="value" id="displayTotal">Rp 300</span>
+                            </div>
+                        </div>
+
+                        <div class="info-note">
+                            <i class="fas fa-info-circle"></i>
+                            Minimal WD Rp 20.000 — setiap penarikan dikenakan biaya potong Rp 1.000.
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-arrow-right"></i> Bayar Sekarang
+                        </button>
+                    </form>
+
+                    <div id="transactionResult" class="transaction-result">
+                        <div class="tr-title"><i class="fas fa-receipt"></i> Detail Transaksi</div>
+                        <p><strong>Nama:</strong> <span id="trName"></span></p>
+                        <p><strong>Email:</strong> <span id="trEmail"></span></p>
+                        <p><strong>Nominal:</strong> <span id="trAmount"></span></p>
+                        <p><strong>Biaya QRIS:</strong> <span id="trFee"></span></p>
+                        <p><strong>Total dibayar:</strong> <span id="trTotal"></span></p>
+                        <p><strong>Waktu:</strong> <span id="trDate"></span></p>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: QR -->
+                <div class="panel-right">
+                    <div class="qr-label"><i class="fas fa-qrcode"></i> Scan QR GoPay</div>
+                    <div class="qr-box">
+                        <!-- QR STATIC KAMU -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=00020101021126610014COM.GO-JEK.WWW01189360091432912413060210G2912413060303UMI51440014ID.CO.QRIS.WWW0215ID10265466090450303UMI5204899953033605802ID5925wilzu stro, Digital & Kre6008SUKABUMI61054336262070703A016304EF97" alt="QR GoPay">
+                    </div>
+                    <div class="merchant-name">Warung Makan Bahagia</div>
+                    <div class="merchant-desc">QR static • scan & bayar</div>
+                    <div class="gopay-badge">
+                        <i class="fab fa-google-pay"></i> GoPay Partner
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== WD SECTION ===== -->
+        <div class="card" id="wdCard">
+            <div class="panel-left" style="padding: 30px 40px;">
+                <h3 style="color:#f0f4fa; margin-bottom:12px;">
+                    <i class="fas fa-money-bill-wave" style="color:#00A651;"></i> 
+                    Request Penarikan (WD)
+                </h3>
+                <div id="wdMessage" class="message" style="margin-bottom:12px;"></div>
+
+                <!-- Form WD (untuk semua user) -->
+                <div id="wdFormContainer">
+                    <div class="wd-form">
+                        <input type="number" id="wdAmount" placeholder="Jumlah (min 20.000)" min="20000">
+                        <input type="text" id="wdBank" placeholder="Nama Bank">
+                        <input type="text" id="wdAccount" placeholder="Nomor Rekening">
+                        <button id="wdSubmitBtn" class="btn-primary" style="margin-top:0;">
+                            <i class="fas fa-paper-plane"></i> Ajukan WD
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daftar WD (hanya untuk admin) -->
+                <div id="adminWdPanel" style="display:none; margin-top:20px;">
+                    <h4 style="color:#f0f4fa; margin-bottom:12px;">Daftar Request WD</h4>
+                    <div id="wdListContainer" class="wd-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== GLOBAL =====
+        let currentUser = null;
+        const FEE = 300;
+
+        // ===== Format Rupiah =====
+        function formatRupiah(angka) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+        }
+
+        // ===== Cek Session =====
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/session', { credentials: 'include' });
+                const data = await res.json();
+                if (!data.loggedIn) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                currentUser = data.user;
+                document.getElementById('userEmail').textContent = currentUser.email;
+                if (currentUser.email === 'wilzu@gmail.com') {
+                    document.getElementById('adminBadge').style.display = 'inline';
+                    document.getElementById('adminWdPanel').style.display = 'block';
+                    loadWdList();
+                }
+                // Sembunyikan form WD jika admin? Tidak, biar semua bisa request.
+                // Tapi admin juga bisa request (mungkin untuk testing)
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // ===== Logout =====
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+            window.location.href = '/login.html';
+        });
+
+        // ===== Payment Form =====
+        const amountInput = document.getElementById('amountInput');
+        const displayNominal = document.getElementById('displayNominal');
+        const displayTotal = document.getElementById('displayTotal');
+
+        function updateFee() {
+            let nominal = parseInt(amountInput.value) || 0;
+            if (nominal < 0) nominal = 0;
+            const total = nominal + FEE;
+            displayNominal.textContent = formatRupiah(nominal);
+            displayTotal.textContent = formatRupiah(total);
+        }
+        amountInput.addEventListener('input', updateFee);
+        updateFee();
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const amount = amountInput.value;
+
+            const msgDiv = document.getElementById('messageDiv');
+            const resultDiv = document.getElementById('transactionResult');
+
+            try {
+                const res = await fetch('/api/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, amount }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const tr = data.transaction;
+                    document.getElementById('trName').textContent = tr.name;
+                    document.getElementById('trEmail').textContent = tr.email;
+                    document.getElementById('trAmount').textContent = formatRupiah(tr.amount);
+                    document.getElementById('trFee').textContent = 'Rp ' + tr.fee;
+                    document.getElementById('trTotal').textContent = formatRupiah(tr.total);
+                    document.getElementById('trDate').textContent = tr.date;
+                    resultDiv.classList.add('show');
+
+                    msgDiv.className = 'message success';
+                    msgDiv.textContent = 'Pembayaran berhasil! Total ' + formatRupiah(tr.total) + ' (termasuk fee Rp 300)';
+                    msgDiv.style.display = 'block';
+                } else {
+                    msgDiv.className = 'message error';
+                    msgDiv.textContent = data.message || 'Gagal memproses pembayaran.';
+                    msgDiv.style.display = 'block';
+                    resultDiv.classList.remove('show');
+                }
+            } catch (err) {
+                msgDiv.className = 'message error';
+                msgDiv.textContent = 'Terjadi kesalahan server.';
+                msgDiv.style.display = 'block';
+                resultDiv.classList.remove('show');
+            }
+        });
+
+        // ===== WD REQUEST =====
+        document.getElementById('wdSubmitBtn').addEventListener('click', async () => {
+            const amount = document.getElementById('wdAmount').value;
+            const bank = document.getElementById('wdBank').value;
+            const account = document.getElementById('wdAccount').value;
+            const wdMsg = document.getElementById('wdMessage');
+
+            if (!amount || !bank || !account) {
+                wdMsg.className = 'message error';
+                wdMsg.textContent = 'Semua kolom wajib diisi.';
+                wdMsg.style.display = 'block';
+                return;
+            }
+            if (parseInt(amount) < 20000) {
+                wdMsg.className = 'message error';
+                wdMsg.textContent = 'Minimal WD Rp 20.000';
+                wdMsg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/withdraw/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount, bank, account }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    wdMsg.className = 'message success';
+                    wdMsg.textContent = 'Request WD berhasil diajukan.';
+                    wdMsg.style.display = 'block';
+                    // Kosongkan form
+                    document.getElementById('wdAmount').value = '';
+                    document.getElementById('wdBank').value = '';
+                    document.getElementById('wdAccount').value = '';
+                    // Jika admin, refresh daftar
+                    if (currentUser && currentUser.email === 'wilzu@gmail.com') {
+                        loadWdList();
+                    }
+                } else {
+                    wdMsg.className = 'message error';
+                    wdMsg.textContent = data.message || 'Gagal mengajukan WD.';
+                    wdMsg.style.display = 'block';
+                }
+            } catch (err) {
+                wdMsg.className = 'message error';
+                wdMsg.textContent = 'Terjadi kesalahan server.';
+                wdMsg.style.display = 'block';
+            }
+        });
+
+        // ===== LOAD WD LIST (admin only) =====
+        async function loadWdList() {
+            try {
+                const res = await fetch('/api/withdraw/list', { credentials: 'include' });
+                const data = await res.json();
+                if (!data.success) return;
+                const container = document.getElementById('wdListContainer');
+                container.innerHTML = '';
+                if (data.withdraws.length === 0) {
+                    container.innerHTML = '<p style="color:#9aa4b8; font-size:14px;">Belum ada request WD.</p>';
+                    return;
+                }
+                // Urutkan dari terbaru
+                const wds = data.withdraws.reverse();
+                wds.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'wd-item';
+                    div.innerHTML = `
+                        <div class="info">
+                            <strong>${w.email}</strong> - 
+                            ${formatRupiah(w.amount)} 
+                            <span class="status status-${w.status}">${w.status}</span><br>
+                            <small>Bank: ${w.bank} - ${w.account}</small><br>
+                            <small style="color:#6b7a93;">${w.date}</small>
+                        </div>
+                        ${w.status === 'pending' ? `
+                            <div class="wd-actions">
+                                <button class="approve" data-id="${w.id}" data-action="approved">Setuju</button>
+                                <button class="reject" data-id="${w.id}" data-action="rejected">Batal</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Event listener untuk tombol aksi
+                container.querySelectorAll('.approve, .reject').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const id = btn.dataset.id;
+                        const action = btn.dataset.action;
+                        await updateWdStatus(id, action);
+                        loadWdList(); // refresh
+                    });
+                });
+            } catch (err) {
+                console.error('Gagal load WD list', err);
+            }
+        }
+
+        async function updateWdStatus(id, status) {
+            try {
+                const res = await fetch('/api/withdraw/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status }),
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Gagal update status: ' + (data.message || ''));
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan.');
+            }
+        }
+
+        // ===== INIT =====
+        checkSession();
+    </script>
+</body>
+</html>
